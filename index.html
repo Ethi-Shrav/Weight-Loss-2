@@ -3,537 +3,661 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎯 AI Weight Loss Tracker</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Personalized Weight Loss Meal Chart - 75.5kg → 60kg</title>
     <style>
-        body { 
-            margin: 0; 
-            padding: 10px; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            min-height: 100vh; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+            .page-break { page-break-before: always; }
         }
-        .lucide { display: inline-block; }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 10px 0;
+            overflow: hidden;
+            min-width: 800px;
+        }
+        
+        .chart-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chart-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .chart-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .meal-grid {
+            display: grid;
+            grid-template-columns: 140px repeat(7, 1fr);
+            gap: 0;
+            overflow-x: auto;
+            min-width: 100%;
+        }
+        
+        .day-header {
+            background: #2d3436;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            min-width: 110px;
+        }
+        
+        .meal-time {
+            background: #636e72;
+            color: white;
+            padding: 15px 10px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 11px;
+            min-width: 140px;
+            text-align: center;
+        }
+        
+        .meal-cell {
+            padding: 12px 8px;
+            border: 1px solid #ddd;
+            font-size: 11px;
+            line-height: 1.3;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 110px;
+        }
+        
+        .veg-day {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .non-veg-day {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .special-meal {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .meal-option {
+            margin: 2px 0;
+            font-weight: 500;
+        }
+        
+        .calories {
+            color: #0984e3;
+            font-weight: bold;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+        
+        .super-food {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            border-left: 4px solid #e91e63;
+            font-weight: 600;
+        }
+        
+        .juice-option {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-left: 4px solid #00bcd4;
+        }
+        
+        .shopping-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        .shopping-header {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .shopping-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .shopping-category {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            border-left: 5px solid #0984e3;
+        }
+        
+        .category-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 12px;
+        }
+        
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .item-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+        
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .quantity {
+            color: #636e72;
+            font-style: italic;
+        }
+        
+        .prep-tips {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .tip-card {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .print-btn {
+            background: #0984e3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+            padding: 0 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        
+        .scroll-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .mobile-note {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #1976d2;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .chart-title {
+                font-size: 22px;
+            }
+            
+            .chart-subtitle {
+                font-size: 12px;
+            }
+            
+            .meal-cell {
+                min-width: 90px;
+                padding: 8px 6px;
+                font-size: 10px;
+                min-height: 80px;
+            }
+            
+            .meal-time {
+                min-width: 120px;
+                font-size: 10px;
+                padding: 12px 8px;
+            }
+            
+            .day-header {
+                min-width: 90px;
+                font-size: 11px;
+                padding: 10px 6px;
+            }
+            
+            .shopping-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .legend {
+                gap: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .meal-cell {
+                min-width: 80px;
+                font-size: 9px;
+                padding: 6px 4px;
+            }
+            
+            .meal-time {
+                min-width: 100px;
+                font-size: 9px;
+            }
+            
+            .day-header {
+                min-width: 80px;
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="mobile-note">
+        📱 <strong>Mobile Tip:</strong> Swipe left/right to scroll through the week, up/down for different meals!
+    </div>
     
-    <script type="text/babel">
-        // Lucide Icons Components
-        const Camera = () => <svg className="lucide lucide-camera" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>;
-        const Plus = () => <svg className="lucide lucide-plus" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14m-7-7h14"></path></svg>;
-        const Trash2 = () => <svg className="lucide lucide-trash-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><path d="M10 11v6m4-6v6"></path></svg>;
-        const Target = () => <svg className="lucide lucide-target" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>;
-        const Activity = () => <svg className="lucide lucide-activity" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>;
-        const Calendar = () => <svg className="lucide lucide-calendar" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg>;
-        const X = () => <svg className="lucide lucide-x" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>;
+    <div class="no-print">
+        <button class="print-btn" onclick="window.print()">🖨️ Print Meal Chart</button>
+        <button class="print-btn" onclick="printShoppingList()">🛒 Print Shopping List Only</button>
+    </div>
 
-        // Your Advanced Weight Loss Tracker Component
-        const AdvancedWeightLossTracker = () => {
-            const [currentWeight, setCurrentWeight] = React.useState(75.5);
-            const [targetWeight] = React.useState(60.0);
-            const [startWeight] = React.useState(75.5);
-            const [dailyCalories, setDailyCalories] = React.useState(0);
-            const [caloriesBurned, setCaloriesBurned] = React.useState(0);
-            const [activeTab, setActiveTab] = React.useState('dashboard');
-            const [showCamera, setShowCamera] = React.useState(false);
-            const [logs, setLogs] = React.useState([]);
-            const [exercises, setExercises] = React.useState([]);
-            const [meals, setMeals] = React.useState([]);
-            const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().split('T')[0]);
-            
-            const videoRef = React.useRef(null);
-            const canvasRef = React.useRef(null);
+    <div class="chart-container">
+        <div class="chart-header">
+            <div class="chart-title">🎯 Personalized Weight Loss Meal Chart</div>
+            <div class="chart-subtitle">75.5kg → 60kg | Sugar-Free South Indian Diet + Superfoods</div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #d4edda; border-left: 4px solid #28a745;"></div>
+                <span>Vegetarian Days</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #f8d7da; border-left: 4px solid #dc3545;"></div>
+                <span>Non-Vegetarian Days</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fff3cd; border-left: 4px solid #ffc107;"></div>
+                <span>Special Meals</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border-left: 4px solid #e91e63;"></div>
+                <span>Superfood Meals</span>
+            </div>
+        </div>
 
-            // South Indian food database with calories
-            const foodDatabase = {
-                'idli': { calories: 39, portion: '1 piece' },
-                'dosa': { calories: 168, portion: '1 medium' },
-                'ragi dosa': { calories: 155, portion: '1 medium' },
-                'upma': { calories: 150, portion: '1 cup' },
-                'poha': { calories: 180, portion: '1 cup' },
-                'brown rice': { calories: 55, portion: '1/4 cup cooked' },
-                'sambar rice': { calories: 320, portion: '1 plate' },
-                'curd rice': { calories: 280, portion: '1 plate' },
-                'sambar': { calories: 85, portion: '1 bowl' },
-                'rasam': { calories: 45, portion: '1 bowl' },
-                'dal': { calories: 100, portion: '1 bowl' },
-                'fish curry': { calories: 180, portion: '100g fish' },
-                'chicken curry': { calories: 220, portion: '100g chicken' },
-                'vegetable curry': { calories: 80, portion: '1 bowl' },
-                'sundal': { calories: 120, portion: '1/2 cup' },
-                'coconut chutney': { calories: 25, portion: '1 tbsp' },
-                'buttermilk': { calories: 40, portion: '1 glass' }
-            };
+        <div class="scroll-container">
+            <div class="meal-grid">
+                <!-- Headers -->
+                <div class="day-header">TIME</div>
+                <div class="day-header">MONDAY</div>
+                <div class="day-header">TUESDAY<br><small>VEG DAY</small></div>
+                <div class="day-header">WEDNESDAY</div>
+                <div class="day-header">THURSDAY<br><small>VEG DAY</small></div>
+                <div class="day-header">FRIDAY</div>
+                <div class="day-header">SATURDAY<br><small>VEG DAY</small></div>
+                <div class="day-header">SUNDAY</div>
 
-            // Exercise database with calories burned per minute
-            const exerciseDatabase = {
-                'badminton': { caloriesPerMin: 8, icon: '🏸' },
-                'running': { caloriesPerMin: 12, icon: '🏃‍♂️' },
-                'walking': { caloriesPerMin: 4, icon: '🚶‍♂️' },
-                'cycling': { caloriesPerMin: 9, icon: '🚴‍♂️' },
-                'swimming': { caloriesPerMin: 11, icon: '🏊‍♂️' },
-                'yoga': { caloriesPerMin: 3, icon: '🧘‍♂️' },
-                'strength training': { caloriesPerMin: 6, icon: '💪' },
-                'push-ups': { caloriesPerMin: 7, icon: '💪' },
-                'squats': { caloriesPerMin: 8, icon: '🦵' },
-                'burpees': { caloriesPerMin: 10, icon: '🔥' }
-            };
-
-            // Calculate progress
-            const weightLoss = startWeight - currentWeight;
-            const progress = (weightLoss / (startWeight - targetWeight)) * 100;
-            const netCalories = dailyCalories - caloriesBurned;
-            const targetDailyCalories = 1550;
-
-            React.useEffect(() => {
-                updateDailyTotals();
-            }, [selectedDate, meals, exercises]);
-
-            const updateDailyTotals = () => {
-                const todayMeals = meals.filter(meal => meal.date === selectedDate);
-                const todayExercises = exercises.filter(ex => ex.date === selectedDate);
-                
-                const totalCalories = todayMeals.reduce((sum, meal) => sum + meal.calories, 0);
-                const totalBurned = todayExercises.reduce((sum, ex) => sum + ex.caloriesBurned, 0);
-                
-                setDailyCalories(totalCalories);
-                setCaloriesBurned(totalBurned);
-            };
-
-            const startCamera = async () => {
-                alert('📸 Camera feature will analyze your meal! (Demo mode - manually add for now)');
-            };
-
-            const addMeal = (foodName, calories, method = 'Manual') => {
-                const newMeal = {
-                    id: Date.now(),
-                    date: selectedDate,
-                    name: foodName,
-                    calories: parseInt(calories),
-                    time: new Date().toLocaleTimeString(),
-                    method: method
-                };
-                
-                setMeals(prev => [...prev, newMeal]);
-            };
-
-            const addExercise = (exerciseName, duration) => {
-                const exercise = exerciseDatabase[exerciseName.toLowerCase()];
-                if (exercise) {
-                    const caloriesBurned = exercise.caloriesPerMin * parseInt(duration);
-                    
-                    const newExercise = {
-                        id: Date.now(),
-                        date: selectedDate,
-                        name: exerciseName,
-                        duration: parseInt(duration),
-                        caloriesBurned: caloriesBurned,
-                        time: new Date().toLocaleTimeString()
-                    };
-                    
-                    setExercises(prev => [...prev, newExercise]);
-                }
-            };
-
-            const getMotivationMessage = () => {
-                if (progress >= 100) return "🎉 Goal achieved! You're amazing!";
-                if (progress >= 75) return `🔥 Almost there! Keep pushing!`;
-                if (progress >= 50) return `💪 Halfway there! Keep going!`;
-                if (progress >= 25) return `🌟 Great progress! ${weightLoss.toFixed(1)}kg lost!`;
-                if (weightLoss > 0) return `✨ You're on track! Every step counts!`;
-                return "🎯 Your journey starts here! Log your first meal!";
-            };
-
-            const QuickFoodSearch = () => {
-                const [search, setSearch] = React.useState('');
-                const [quantity, setQuantity] = React.useState(1);
-                
-                const filteredFoods = Object.keys(foodDatabase).filter(food =>
-                    food.toLowerCase().includes(search.toLowerCase())
-                );
-
-                return (
-                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                        <h3 className="font-semibold mb-3">🍽️ Quick Add Food</h3>
-                        <div className="space-y-3">
-                            <input
-                                type="text"
-                                placeholder="Search South Indian foods..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full p-2 border rounded-lg"
-                            />
-                            <div className="flex gap-2">
-                                <input
-                                    type="number"
-                                    placeholder="Qty"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(e.target.value)}
-                                    className="w-20 p-2 border rounded-lg"
-                                />
-                                <span className="p-2">portions</span>
-                            </div>
-                            
-                            {search && (
-                                <div className="max-h-40 overflow-y-auto space-y-1">
-                                    {filteredFoods.slice(0, 5).map(food => (
-                                        <div
-                                            key={food}
-                                            className="flex justify-between items-center p-2 bg-white rounded border cursor-pointer hover:bg-blue-50"
-                                            onClick={() => {
-                                                addMeal(food, foodDatabase[food].calories * quantity);
-                                                setSearch('');
-                                                setQuantity(1);
-                                            }}
-                                        >
-                                            <span className="capitalize">{food}</span>
-                                            <span className="text-sm text-gray-600">
-                                                {foodDatabase[food].calories * quantity} cal
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                );
-            };
-
-            return (
-                <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 text-white p-6">
-                        <div className="text-center">
-                            <h1 className="text-3xl font-bold mb-2">🎯 AI Weight Loss Tracker</h1>
-                            <p className="opacity-90">Advanced calorie tracking with meal recognition</p>
-                        </div>
-                    </div>
-
-                    {/* Stats Dashboard */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50">
-                        <div className="text-center bg-white p-4 rounded-lg shadow">
-                            <div className="text-2xl font-bold text-blue-600">{currentWeight}</div>
-                            <div className="text-sm text-gray-600">Current (kg)</div>
-                        </div>
-                        <div className="text-center bg-white p-4 rounded-lg shadow">
-                            <div className="text-2xl font-bold text-green-600">{weightLoss.toFixed(1)}</div>
-                            <div className="text-sm text-gray-600">Lost (kg)</div>
-                        </div>
-                        <div className="text-center bg-white p-4 rounded-lg shadow">
-                            <div className="text-2xl font-bold text-orange-600">{dailyCalories}</div>
-                            <div className="text-sm text-gray-600">Calories In</div>
-                        </div>
-                        <div className="text-center bg-white p-4 rounded-lg shadow">
-                            <div className="text-2xl font-bold text-red-600">{caloriesBurned}</div>
-                            <div className="text-sm text-gray-600">Burned</div>
-                        </div>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="px-6 pb-4">
-                        <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
-                            <div 
-                                className="bg-gradient-to-r from-green-400 to-blue-500 h-full transition-all duration-500"
-                                style={{ width: `${Math.min(progress, 100)}%` }}
-                            ></div>
-                        </div>
-                        <div className="text-center mt-2">
-                            <span className="font-semibold">{Math.min(progress, 100).toFixed(1)}% Complete</span>
-                            <div className="text-sm text-gray-600 mt-1">{getMotivationMessage()}</div>
-                        </div>
-                    </div>
-
-                    {/* Calorie Balance */}
-                    <div className="mx-6 mb-4 p-4 rounded-lg bg-gradient-to-r from-yellow-100 to-orange-100 border-l-4 border-orange-500">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <span className="font-semibold">Net Calories: </span>
-                                <span className={`text-lg font-bold ${netCalories > targetDailyCalories ? 'text-red-600' : 'text-green-600'}`}>
-                                    {netCalories}
-                                </span>
-                                <span className="text-sm text-gray-600"> / {targetDailyCalories} target</span>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-sm">
-                                    {netCalories > targetDailyCalories ? 
-                                        `⚠️ ${netCalories - targetDailyCalories} over target` : 
-                                        `✅ ${targetDailyCalories - netCalories} under target`
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Navigation Tabs */}
-                    <div className="flex bg-gray-100">
-                        {[
-                            { id: 'dashboard', icon: Target, label: 'Dashboard' },
-                            { id: 'meals', icon: Plus, label: 'Add Food' },
-                            { id: 'exercise', icon: Activity, label: 'Exercise' }
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex-1 flex items-center justify-center gap-2 p-4 ${
-                                    activeTab === tab.id ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-200'
-                                }`}
-                            >
-                                <tab.icon />
-                                <span className="hidden sm:inline">{tab.label}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Tab Content */}
-                    <div className="p-6">
-                        {/* Dashboard Tab */}
-                        {activeTab === 'dashboard' && (
-                            <div className="space-y-6">
-                                <div className="bg-gradient-to-r from-green-100 to-blue-100 p-4 rounded-lg border-l-4 border-green-500">
-                                    <h3 className="font-semibold mb-2">📊 Today's Summary ({selectedDate})</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <h4 className="font-medium mb-2">🍽️ Meals Today</h4>
-                                            {meals.filter(m => m.date === selectedDate).slice(-3).map(meal => (
-                                                <div key={meal.id} className="flex justify-between text-sm">
-                                                    <span>{meal.name}</span>
-                                                    <span>{meal.calories} cal</span>
-                                                </div>
-                                            ))}
-                                            {meals.filter(m => m.date === selectedDate).length === 0 && (
-                                                <p className="text-gray-500 text-sm">No meals logged yet</p>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <h4 className="font-medium mb-2">💪 Exercises Today</h4>
-                                            {exercises.filter(e => e.date === selectedDate).slice(-3).map(exercise => (
-                                                <div key={exercise.id} className="flex justify-between text-sm">
-                                                    <span>{exercise.name}</span>
-                                                    <span>-{exercise.caloriesBurned} cal</span>
-                                                </div>
-                                            ))}
-                                            {exercises.filter(e => e.date === selectedDate).length === 0 && (
-                                                <p className="text-gray-500 text-sm">No exercises logged yet</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
-                                    <h3 className="font-semibold mb-2">🎯 Weight Log</h3>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="number"
-                                            step="0.1"
-                                            placeholder="Enter today's weight"
-                                            className="flex-1 p-2 border rounded-lg"
-                                            id="weightInput"
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                const input = document.getElementById('weightInput');
-                                                if (input.value) {
-                                                    setCurrentWeight(parseFloat(input.value));
-                                                    input.value = '';
-                                                    alert('Weight logged successfully!');
-                                                }
-                                            }}
-                                            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                                        >
-                                            Log Weight
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Meals Tab */}
-                        {activeTab === 'meals' && (
-                            <div className="space-y-6">
-                                <div className="text-center">
-                                    <input
-                                        type="date"
-                                        value={selectedDate}
-                                        onChange={(e) => setSelectedDate(e.target.value)}
-                                        className="p-2 border rounded-lg mb-4"
-                                    />
-                                </div>
-
-                                {/* AI Photo Recognition */}
-                                <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-lg border-l-4 border-purple-500">
-                                    <h3 className="font-semibold mb-3">🤖 AI Meal Recognition</h3>
-                                    <p className="text-sm text-gray-600 mb-3">Take a photo of your meal and let AI calculate calories!</p>
-                                    <button
-                                        onClick={startCamera}
-                                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3 rounded-lg hover:from-purple-600 hover:to-pink-600 flex items-center justify-center gap-2"
-                                    >
-                                        <Camera />
-                                        📸 Take Photo & Analyze
-                                    </button>
-                                </div>
-
-                                <QuickFoodSearch />
-
-                                {/* Custom Food Entry */}
-                                <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                    <h3 className="font-semibold mb-3">➕ Add Custom Food</h3>
-                                    <div className="space-y-3">
-                                        <input
-                                            type="text"
-                                            placeholder="Food name"
-                                            id="customFood"
-                                            className="w-full p-2 border rounded-lg"
-                                        />
-                                        <input
-                                            type="number"
-                                            placeholder="Calories"
-                                            id="customCalories"
-                                            className="w-full p-2 border rounded-lg"
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                const food = document.getElementById('customFood').value;
-                                                const calories = document.getElementById('customCalories').value;
-                                                if (food && calories) {
-                                                    addMeal(food, calories);
-                                                    document.getElementById('customFood').value = '';
-                                                    document.getElementById('customCalories').value = '';
-                                                }
-                                            }}
-                                            className="w-full bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
-                                        >
-                                            Add Food
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Today's Meals */}
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <h3 className="font-semibold mb-3">🍽️ Today's Meals ({dailyCalories} calories)</h3>
-                                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                                        {meals.filter(meal => meal.date === selectedDate).map(meal => (
-                                            <div key={meal.id} className="flex justify-between items-center bg-white p-3 rounded border">
-                                                <div>
-                                                    <div className="font-medium capitalize">{meal.name}</div>
-                                                    <div className="text-xs text-gray-500">
-                                                        {meal.time} • {meal.method}
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="font-semibold">{meal.calories} cal</div>
-                                                    <button
-                                                        onClick={() => {
-                                                            setMeals(prev => prev.filter(m => m.id !== meal.id));
-                                                        }}
-                                                        className="text-red-500 hover:text-red-700"
-                                                    >
-                                                        <Trash2 />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {meals.filter(meal => meal.date === selectedDate).length === 0 && (
-                                            <p className="text-gray-500 text-center py-4">No meals logged for today. Add your first meal above!</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Exercise Tab */}
-                        {activeTab === 'exercise' && (
-                            <div className="space-y-6">
-                                <div className="text-center">
-                                    <input
-                                        type="date"
-                                        value={selectedDate}
-                                        onChange={(e) => setSelectedDate(e.target.value)}
-                                        className="p-2 border rounded-lg mb-4"
-                                    />
-                                </div>
-
-                                {/* Exercise Entry */}
-                                <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                    <h3 className="font-semibold mb-3">💪 Log Exercise</h3>
-                                    <div className="space-y-3">
-                                        <select id="exerciseSelect" className="w-full p-2 border rounded-lg">
-                                            <option value="">Select Exercise</option>
-                                            {Object.keys(exerciseDatabase).map(exercise => (
-                                                <option key={exercise} value={exercise}>
-                                                    {exerciseDatabase[exercise].icon} {exercise} ({exerciseDatabase[exercise].caloriesPerMin} cal/min)
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <input
-                                            type="number"
-                                            placeholder="Duration (minutes)"
-                                            id="durationInput"
-                                            className="w-full p-2 border rounded-lg"
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                const exercise = document.getElementById('exerciseSelect').value;
-                                                const duration = document.getElementById('durationInput').value;
-                                                if (exercise && duration) {
-                                                    addExercise(exercise, duration);
-                                                    document.getElementById('exerciseSelect').value = '';
-                                                    document.getElementById('durationInput').value = '';
-                                                }
-                                            }}
-                                            className="w-full bg-purple-500 text-white p-2 rounded-lg hover:bg-purple-600"
-                                        >
-                                            Log Exercise
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Today's Exercises */}
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <h3 className="font-semibold mb-3">💪 Today's Exercises ({caloriesBurned} calories burned)</h3>
-                                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                                        {exercises.filter(ex => ex.date === selectedDate).map(exercise => (
-                                            <div key={exercise.id} className="flex justify-between items-center bg-white p-3 rounded border">
-                                                <div>
-                                                    <div className="font-medium capitalize">
-                                                        {exerciseDatabase[exercise.name]?.icon} {exercise.name}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        {exercise.time} • {exercise.duration} minutes
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="font-semibold text-red-600">-{exercise.caloriesBurned} cal</div>
-                                                    <button
-                                                        onClick={() => {
-                                                            setExercises(prev => prev.filter(e => e.id !== exercise.id));
-                                                        }}
-                                                        className="text-red-500 hover:text-red-700"
-                                                    >
-                                                        <Trash2 />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {exercises.filter(ex => ex.date === selectedDate).length === 0 && (
-                                            <p className="text-gray-500 text-center py-4">No exercises logged for today. Add your first workout above!</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                <!-- Morning -->
+                <div class="meal-time">🌅 MORNING<br><small>6:30-7:30</small></div>
+                <div class="meal-cell super-food">
+                    <div class="meal-option">ALPINO Oats + Banana + Almonds + Cashew + Sabja + Pumpkin Seeds + Chia Seeds</div>
+                    <div class="calories">340 cal</div>
                 </div>
-            );
-        };
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Red Banana Milkshake + Almonds (6) + Cashew (6) + Dry Grapes</div>
+                    <div class="calories">320 cal</div>
+                </div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">2 Ragi Dosa + Mint Chutney (sugar-free)</div>
+                    <div class="calories">310 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">2 Idli + Sambar + Coconut Chutney</div>
+                    <div class="calories">320 cal</div>
+                </div>
+                <div class="meal-cell special-meal">
+                    <div class="meal-option">Red Banana Milkshake + Mixed Nuts + Dry Grapes</div>
+                    <div class="calories">330 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Ragi Porridge + Nuts + Banana (sugar-free)</div>
+                    <div class="calories">280 cal</div>
+                </div>
+                <div class="meal-cell super-food">
+                    <div class="meal-option">ALPINO Oats Bowl + All Superfoods + Banana</div>
+                    <div class="calories">350 cal</div>
+                </div>
 
-        // Render the app
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<AdvancedWeightLossTracker />);
-    </script>
-</body>
-</html>
+                <!-- Mid-Morning -->
+                <div class="meal-time">🥤 MID-MORNING<br><small>10:00</small></div>
+                <div class="meal-cell juice-option">
+                    <div class="meal-option">Fresh Amla Juice + Pinch of Salt (sugar-free)</div>
+                    <div class="calories">25 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Buttermilk + Mint + Rock Salt</div>
+                    <div class="calories">40 cal</div>
+                </div>
+                <div class="meal-cell juice-option">
+                    <div class="meal-option">Fresh Pineapple Juice (sugar-free)</div>
+                    <div class="calories">60 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Green Tea + Almonds (5-6)</div>
+                    <div class="calories">50 cal</div>
+                </div>
+                <div class="meal-cell juice-option">
+                    <div class="meal-option">Sweet Lime Juice (sugar-free)</div>
+                    <div class="calories">40 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Herbal Tea + Mixed Nuts</div>
+                    <div class="calories">70 cal</div>
+                </div>
+                <div class="meal-cell juice-option">
+                    <div class="meal-option">Fresh Amla Juice + Salt</div>
+                    <div class="calories">25 cal</div>
+                </div>
+
+                <!-- Lunch -->
+                <div class="meal-time">🍽️ LUNCH<br><small>12:30-1:30</small></div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Fish Curry + Brown Rice + Dal + Vegetable (no sugar)</div>
+                    <div class="calories">520 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Sambar Rice + Poriyal + Kootu + Curd (no sugar in sambar)</div>
+                    <div class="calories">480 cal</div>
+                </div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Chicken Curry + 2 Roti + Dal + Rasam (sugar-free)</div>
+                    <div class="calories">540 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Curd Rice + Pickle + Veg Curry + Rasam (no sugar)</div>
+                    <div class="calories">450 cal</div>
+                </div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Mutton Curry + Rice + Sambar + Veg (sugar-free)</div>
+                    <div class="calories">550 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Dal Rice + Mixed Veg + Buttermilk + Papad</div>
+                    <div class="calories">470 cal</div>
+                </div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Fish Fry + Rice + Rasam + Dal + Veg (no sugar)</div>
+                    <div class="calories">530 cal</div>
+                </div>
+
+                <!-- Evening -->
+                <div class="meal-time">🥜 EVENING<br><small>4:00-5:00</small></div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Sundal (Chana) + Green Tea</div>
+                    <div class="calories">120 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Mixed Nuts (Almonds + Cashew + Walnuts)</div>
+                    <div class="calories">140 cal</div>
+                </div>
+                <div class="meal-cell juice-option">
+                    <div class="meal-option">Fresh Pineapple Juice + Cut Fruits</div>
+                    <div class="calories">90 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Roasted Pumpkin Seeds + Chia Seeds + Herbal Tea</div>
+                    <div class="calories">110 cal</div>
+                </div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Mixed Sundal + Sweet Lime Juice</div>
+                    <div class="calories">130 cal</div>
+                </div>
+                <div class="meal-cell special-meal">
+                    <div class="meal-option">Banana + Almonds + Cashew + Sabja Seeds</div>
+                    <div class="calories">160 cal</div>
+                </div>
+                <div class="meal-cell juice-option">
+                    <div class="meal-option">Fresh Amla Juice + Mixed Nuts</div>
+                    <div class="calories">95 cal</div>
+                </div>
+
+                <!-- Dinner -->
+                <div class="meal-time">🌙 DINNER<br><small>7:30-8:30</small></div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Grilled Fish + Vegetable + Small Brown Rice</div>
+                    <div class="calories">420 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Vegetable Soup + 2 Small Dosa (sugar-free chutney)</div>
+                    <div class="calories">380 cal</div>
+                </div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Chicken Soup + Mixed Veg + 2 Roti</div>
+                    <div class="calories">450 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Ragi Mudde + Sambar + Vegetable (no sugar)</div>
+                    <div class="calories">400 cal</div>
+                </div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Egg Curry + Vegetable + Small Brown Rice</div>
+                    <div class="calories">440 cal</div>
+                </div>
+                <div class="meal-cell veg-day">
+                    <div class="meal-option">Mixed Dal + Vegetable + 2 Roti</div>
+                    <div class="calories">390 cal</div>
+                </div>
+                <div class="meal-cell non-veg-day">
+                    <div class="meal-option">Fish Curry + Vegetable + Quinoa</div>
+                    <div class="calories">460 cal</div>
+                </div>
+
+                <!-- Total Calories Row -->
+                <div class="meal-time" style="background: #e74c3c;">📊 TOTAL DAILY</div>
+                <div class="meal-cell" style="background: #ff7675; color: white; font-weight: bold;">1545 cal</div>
+                <div class="meal-cell" style="background: #ff7675; color: white; font-weight: bold;">1510 cal</div>
+                <div class="meal-cell" style="background: #ff7675; color: white; font-weight: bold;">1550 cal</div>
+                <div class="meal-cell" style="background: #ff7675; color: white; font-weight: bold;">1530 cal</div>
+                <div class="meal-cell" style="background: #ff7675; color: white; font-weight: bold;">1565 cal</div>
+                <div class="meal-cell" style="background: #ff7675; color: white; font-weight: bold;">1540 cal</div>
+                <div class="meal-cell" style="background: #ff7675; color: white; font-weight: bold;">1580 cal</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <div class="shopping-section" id="shopping-list">
+        <div class="shopping-header">
+            <h2>🛒 Personalized Weekly Shopping List</h2>
+            <p>Your specific ingredients + superfoods for sugar-free weight loss!</p>
+        </div>
+
+        <div class="shopping-grid">
+            <div class="shopping-category">
+                <div class="category-title">🌟 YOUR SUPERFOODS</div>
+                <ul class="item-list">
+                    <li>ALPINO 24% High Protein Oats <span class="quantity">1 kg</span></li>
+                    <li>Red Bananas <span class="quantity">2 dozen</span></li>
+                    <li>Almonds (Premium) <span class="quantity">500g</span></li>
+                    <li>Cashew Nuts <span class="quantity">300g</span></li>
+                    <li>Dry Grapes/Raisins <span class="quantity">200g</span></li>
+                    <li>Sabja Seeds (Basil) <span class="quantity">100g</span></li>
+                    <li>Pumpkin Seeds <span class="quantity">150g</span></li>
+                    <li>Chia Seeds <span class="quantity">200g</span></li>
+                    <li>Walnuts <span class="quantity">200g</span></li>
+                </ul>
+            </div>
+
+            <div class="shopping-category">
+                <div class="category-title">🥤 FRESH JUICES (Sugar-Free)</div>
+                <ul class="item-list">
+                    <li>Fresh Amla <span class="quantity">1 kg</span></li>
+                    <li>Pineapples <span class="quantity">2 pieces</span></li>
+                    <li>Sweet Lime <span class="quantity">2 kg</span></li>
+                    <li>Rock Salt <span class="quantity">200g</span></li>
+                    <li>Black Salt <span class="quantity">100g</span></li>
+                </ul>
+            </div>
+
+            <div class="shopping-category">
+                <div class="category-title">🥬 VEGETABLES (Weekly)</div>
+                <ul class="item-list">
+                    <li>Onions <span class="quantity">2 kg</span></li>
+                    <li>Tomatoes <span class="quantity">1.5 kg</span></li>
+                    <li>Okra (Bhindi) <span class="quantity">500g</span></li>
+                    <li>Drumstick <span class="quantity">500g</span></li>
+                    <li>Bottle Gourd <span class="quantity">1 piece</span></li>
+                    <li>Brinjal <span class="quantity">500g</span></li>
+                    <li>Cabbage <span class="quantity">1 small</span></li>
+                    <li>Carrot <span class="quantity">500g</span></li>
+                    <li>Beans <span class="quantity">250g</span></li>
+                    <li>Cucumber <span class="quantity">3-4 pieces</span></li>
+                    <li>Spinach/Palak <span class="quantity">2 bunches</span></li>
+                    <li>Curry Leaves <span class="quantity">3 bunches</span></li>
+                    <li>Coriander <span class="quantity">3 bunches</span></li>
+                    <li>Mint Leaves <span class="quantity">2 bunches</span></li>
+                    <li>Green Chilies <span class="quantity">100g</span></li>
+                    <li>Ginger-Garlic <span class="quantity">200g each</span></li>
+                </ul>
+            </div>
+
+            <div class="shopping-category">
+                <div class="category-title">🐟 PROTEINS (Weekly)</div>
+                <ul class="item-list">
+                    <li>Fish (Local varieties) <span class="quantity">1 kg</span></li>
+                    <li>Chicken (Country/Local) <span class="quantity">500g</span></li>
+                    <li>Mutton <span class="quantity">250g</span></li>
+                    <li>Eggs <span class="quantity">1 dozen</span></li>
+                    <li>Toor Dal <span class="quantity">500g</span></li>
+                    <li>Moong Dal <span class="quantity">250g</span></li>
+                    <li>Chana Dal <span class="quantity">250g</span></li>
+                    <li>Black Chana <span class="quantity">250g</span></li>
+                    <li>White Chana <span class="quantity">250g</span></li>
+                </ul>
+            </div>
+
+            <div class="shopping-category">
+                <div class="category-title">🌾 GRAINS & HEALTHY CARBS</div>
+                <ul class="item-list">
+                    <li>Brown Rice <span class="quantity">2 kg</span></li>
+                    <li>Ragi Flour <span class="quantity">500g</span></li>
+                    <li>Whole Wheat Flour <span class="quantity">1 kg</span></li>
+                    <li>Poha <span class="quantity">250g</span></li>
+                    <li>Quinoa (optional) <span class="quantity">200g</span></li>
+                </ul>
+            </div>
+
+            <div class="shopping-category">
+                <div class="category-title">🥛 DAIRY & COCONUT</div>
+                <ul class="item-list">
+                    <li>Low Fat Milk <span class="quantity">3 liters</span></li>
+                    <li>Low Fat Curd <span class="quantity">1 kg</span></li>
+                    <li>Coconut (Fresh) <span class="quantity">3 pieces</span></li>
+                </ul>
+            </div>
+
+            <div class="shopping-category">
+                <div class="category-title">🧄 SPICES & SUGAR-FREE CONDIMENTS</div>
+                <ul class="item-list">
+                    <li>Turmeric Powder <span class="quantity">100g</span></li>
+                    <li>Coriander Powder <span class="quantity">100g</span></li>
+                    <li>Cumin Powder <span class="quantity">50g</span></li>
+                    <li>Red Chili Powder <span class="quantity">100g</span></li>
+                    <li>Garam Masala <span class="quantity">50g</span></li>
+                    <li>Mustard Seeds <span class="quantity">50g</span></li>
+                    <li>Cumin Seeds <span class="quantity">50g</span></li>
+                    <li>Asafoetida <span class="quantity">25g</span></li>
+                    <li>Sambar Powder (sugar-free) <span class="quantity">100g</span></li>
+                    <li>Rasam Powder (sugar-free) <span class="quantity">100g</span></li>
+                    <li>Tamarind <span class="quantity">200g</span></li>
+                    <li>Jaggery (minimal use) <span class="quantity">100g</span></li>
+                </ul>
+            </div>
+
+            <div class="shopping-category">
+                <div class="category-title">🍎 FRUITS (Buy Fresh 2x/week)</div>
+                <ul class="item-list">
+                    <li>Red Bananas <span class="quantity">2 dozen</span></li>
+                    <li>Regular Bananas <span class="quantity">1 dozen</span></li>
+                    <li>Apples <span class="quantity">1 kg</span></li>
+                    <li>Papaya <span class="quantity">1 piece</span></li>
+                    <li>Guava <span class="quantity">500g</span></li>
+                    <li>Watermelon <span class="quantity">1 piece</span></li>
+                    <li>Orange <span class="quantity">6 pieces</span></li>
